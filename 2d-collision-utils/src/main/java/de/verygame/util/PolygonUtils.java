@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.FloatArray;
 
-import static de.verygame.util.collision.CollisionUtils.RECTANGLE_VERTEX_COUNT;
+import static de.verygame.util.CollisionUtils.RECTANGLE_VERTEX_COUNT;
 
 /**
  * Created by Marco on 04.05.2017.

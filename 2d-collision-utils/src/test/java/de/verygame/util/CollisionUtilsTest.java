@@ -1,7 +1,8 @@
-package de.verygame.util.collision;
+package de.verygame.util;
 
 import com.badlogic.gdx.math.Vector2;
 
+import de.verygame.util.CollisionUtils;
 import org.junit.Test;
 
 import de.verygame.util.PolygonUtils;
