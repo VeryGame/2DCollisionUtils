@@ -1,0 +1,37 @@
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+    apply plugin: "java"
+
+    repositories {
+        mavenCentral()
+    }
+
+    ext {
+        gdxVersion = '1.9.4'
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.12'
+        testCompile 'org.mockito:mockito-all:1.10.19'
+        testCompile 'org.powermock:powermock-api-mockito:1.6.4'
+        testCompile 'org.powermock:powermock-module-junit4-rule-agent:1.6.4'
+        testCompile 'org.powermock:powermock-module-junit4-rule:1.6.4'
+        testCompile 'org.powermock:powermock-module-junit4:1.6.4'
+    }
+}
+
+project(':2d-collision-utils') {
+    apply plugin: "maven"
+    apply plugin: 'signing'
+
+    test {
+        testLogging.showStandardStreams = true
+    }
+
+    dependencies {
+        compile "com.badlogicgames.gdx:gdx-tools:1.9.4"
+        compile 'org.jbox2d:jbox2d-library:2.2.1.1'
+        compile 'org.reflections:reflections:0.9.10'
+    }
+}
