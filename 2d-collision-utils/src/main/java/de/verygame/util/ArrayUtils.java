@@ -1,15 +1,9 @@
 package de.verygame.util;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.FloatArray;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Stack;
 
 /**
- * @author Rico Schrage, Marco Deneke
+ * @author Marco Deneke
  */
 public class ArrayUtils {
 
@@ -40,45 +34,21 @@ public class ArrayUtils {
     public static String toString(float[] vertices) {
 
         String res = "";
-        res += "[";
+
+        StringBuilder resBuilder = new StringBuilder(res);
+        resBuilder.append("[");
+
         for (int i = 0; i < vertices.length; i++) {
             if (i < vertices.length - 1) {
-                res += (vertices[i] + ", ");
-            }
-            else {
-                res += (Float.toString(vertices[i]));
+                resBuilder.append(vertices[i]).append(", ");
+            } else {
+                resBuilder.append(Float.toString(vertices[i]));
             }
         }
+
+        res = resBuilder.toString();
         res += "}";
+
         return res;
     }
-
-    public static Vector2[] removeDuplicates(Vector2[] vertices) {
-        Deque<Vector2> stack = new ArrayDeque<>();
-
-        for (Vector2 v : vertices) {
-            if (!stack.contains(v)) {
-                stack.push(v);
-            }
-        }
-
-        Vector2[] reducedVertices = new Vector2[stack.size()];
-        return stack.toArray(reducedVertices);
-    }
-
-    /**
-     * Removes duplicate vertices from a sorted FloatArray
-     */
-    public static void removeDuplicates(FloatArray vertices) {
-        for (int i = 0; i < vertices.size - 2; i += 2) {
-            if (MathUtils.isEqual(vertices.get(i), vertices.get(i + 2)) && MathUtils.isEqual(vertices.get(i + 1), vertices.get(i + 3))) {
-                vertices.removeRange(i + 2, i + 3);
-            }
-        }
-    }
-
-    public static int wrapIndex(int i, int arrayLength) {
-        return i >= 0 ? (i % arrayLength) : ((i + arrayLength) % arrayLength);
-    }
-
 }

@@ -2,30 +2,19 @@ package de.verygame.util;
 
 import com.badlogic.gdx.math.Vector2;
 
-import de.verygame.util.ArrayUtils;
-import de.verygame.util.PolygonUtils;
-
 /**
  * @author Marco Deneke
- *         <p/>
- *         Created by Marco Deneke on 24.06.2015.
+ * <p/>
+ * Created by Marco Deneke on 24.06.2015.
  */
 public final class CollisionUtils {
 
     private static final int POLYGON_VERTEX_COUNT = 3;
-    public static final int RECTANGLE_VERTEX_COUNT = 6;
-    private static Vector2[] rectanglePoly = new Vector2[RECTANGLE_VERTEX_COUNT];
-    private static Vector2 temp = new Vector2();
+    static final int RECTANGLE_VERTEX_COUNT = 6;
 
     private static Vector2 gAxis = new Vector2();
     private static float[] minMaxA = {0, 0};
     private static float[] minMaxB = {0, 0};
-
-    static {
-        for (Vector2 v : rectanglePoly) {
-            v = new Vector2();
-        }
-    }
 
     private CollisionUtils() {
         //private constructor because the class is static
@@ -86,12 +75,7 @@ public final class CollisionUtils {
         }
 
         //check if one point on the circle is inside of the polygon
-        if (contains(x2, y2, ArrayUtils.buildVertexArray(polygon), x + r, y)) {
-            return true;
-        }
-
-
-        return false;
+        return contains(x2, y2, ArrayUtils.buildVertexArray(polygon), x + r, y);
     }
 
     /**
@@ -233,13 +217,11 @@ public final class CollisionUtils {
                 d = dot(polygonX, polygonY, vector.x * xScale, vector.y * yScale, axis.x, axis.y);
                 if (d < minMaxA[0]) {
                     minMaxA[0] = d;
-                }
-                else if (d > minMaxA[1]) {
+                } else if (d > minMaxA[1]) {
                     minMaxA[1] = d;
                 }
             }
-        }
-        else {
+        } else {
             minMaxB[0] = d;
             minMaxB[1] = d;
 
@@ -247,8 +229,7 @@ public final class CollisionUtils {
                 d = dot(polygonX, polygonY, vector.x * xScale, vector.y * yScale, axis.x, axis.y);
                 if (d < minMaxB[0]) {
                     minMaxB[0] = d;
-                }
-                else if (d > minMaxB[1]) {
+                } else if (d > minMaxB[1]) {
                     minMaxB[1] = d;
                 }
             }
@@ -356,10 +337,12 @@ public final class CollisionUtils {
                 // Line segment start point is inside the circle
                 return true;
             }
+
             if ((a - c) * (a - c) + (b - d) * (b - d) <= r * r) {
                 // Line segment end point is inside the circle
                 return true;
             }
+
             if (c * a + d * b >= 0 && c * a + d * b <= a * a + b * b) {
                 // Middle section only is inside the circle
                 return true;
@@ -443,7 +426,7 @@ public final class CollisionUtils {
 
         float accuracy = (xMax - xMin) / 100;
 
-        int intersectionCount = 0;
+        int intersectionCount;
 
         boolean contains = false;
 
@@ -539,20 +522,20 @@ public final class CollisionUtils {
     }
 
     /**
-     * Checks if the moving square faces towards the other square.
-     * Precision used to avoid edge cases, where two obstacles are to close to each other.
+     * Checks if a moving rectangle faces towards another rectangle.
+     * Precision used to avoid edge cases, where two rectangles are to close to each other.
      *
-     * @param bottomLeftX      bottom left x of the moving square
-     * @param bottomLeftY      bottom left y of the moving square
-     * @param topRightX        top right x of the moving square
-     * @param topRightY        top right y of the moving square
-     * @param vx               x velocity of the moving square
-     * @param vy               y velocity of the moving square
-     * @param otherBottomLeftX bottom left x of the other square
-     * @param otherBottomLeftY bottom left y of the other square
-     * @param otherTopRightX   top right x of the other square
-     * @param otherTopRightY   top right y of the other square
-     * @return true when it's face is moving towards the other square
+     * @param bottomLeftX      bottom left x of the moving rectangle
+     * @param bottomLeftY      bottom left y of the moving rectangle
+     * @param topRightX        top right x of the moving rectangle
+     * @param topRightY        top right y of the moving rectangle
+     * @param vx               x velocity of the moving rectangle
+     * @param vy               y velocity of the moving rectangle
+     * @param otherBottomLeftX bottom left x of the other rectangle
+     * @param otherBottomLeftY bottom left y of the other rectangle
+     * @param otherTopRightX   top right x of the other rectangle
+     * @param otherTopRightY   top right y of the other rectangle
+     * @return true when it's face is moving towards the other rectangle
      */
     public static boolean facesTowards(final float bottomLeftX, final float bottomLeftY, final float topRightX, final float topRightY, final float vx, final float vy, final float otherBottomLeftX, final float otherBottomLeftY, final float otherTopRightX, final float otherTopRightY) {
 
@@ -562,8 +545,7 @@ public final class CollisionUtils {
 
             return otherBottomLeftY + precision < topRightY && bottomLeftY + precision < otherTopRightY;
 
-        }
-        else if (vx * vx < vy * vy) {
+        } else if (vx * vx < vy * vy) {
 
             return otherBottomLeftX + precision < topRightX && bottomLeftX + precision < otherTopRightX;
         }
