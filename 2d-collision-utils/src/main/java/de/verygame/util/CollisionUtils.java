@@ -12,7 +12,7 @@ public final class CollisionUtils {
     private static final int POLYGON_VERTEX_COUNT = 3;
     static final int RECTANGLE_VERTEX_COUNT = 6;
 
-    private static Vector2 gAxis = new Vector2();
+    private static float[] gAxis = new float[2];
     private static float[] minMaxA = {0, 0};
     private static float[] minMaxB = {0, 0};
 
@@ -29,13 +29,11 @@ public final class CollisionUtils {
      * @param height    height of rectangle
      * @param x2        global x of polygon
      * @param y2        global y of polygon
-     * @param xScale    x scaling of polygon
-     * @param yScale    y scaling of polygon
      * @param otherPoly points of polygon
      * @return true when colliding else false
      */
-    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final float xScale, final float yScale, final Vector2[] otherPoly) {
-        return checkPolygonPolygonCollision(x, y, 1, 1, PolygonUtils.constructRectanglePolygon(width, height), x2, y2, xScale, yScale, otherPoly);
+    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final Vector2[] otherPoly) {
+        return checkPolygonPolygonCollision(x, y, PolygonUtils.constructRectanglePolygon(width, height), x2, y2, otherPoly);
     }
 
     /**
@@ -46,12 +44,10 @@ public final class CollisionUtils {
      * @param r       radius of the circle
      * @param x2      x coordinate of the polygon
      * @param y2      y coordinate of the polygon
-     * @param xScale  x scaling of the polygon
-     * @param yScale  y scaling of the polygon
      * @param polygon vertices of the Polygon
      * @return true when they collide otherwise false
      */
-    public static boolean checkCirclePolygonCollision(float x, float y, float r, float x2, float y2, final float xScale, final float yScale, final Vector2[] polygon) {
+    public static boolean checkCirclePolygonCollision(float x, float y, float r, float x2, float y2, final Vector2[] polygon) {
 
         Vector2 first;
         Vector2 second;
@@ -59,9 +55,9 @@ public final class CollisionUtils {
 
         for (int i = 0; i < polygon.length - 2; i += POLYGON_VERTEX_COUNT) {
 
-            first = polygon[i].cpy().scl(xScale, yScale).add(x2, y2);
-            second = polygon[i + 1].cpy().scl(xScale, yScale).add(x2, y2);
-            third = polygon[i + 2].cpy().scl(xScale, yScale).add(x2, y2);
+            first = polygon[i].cpy().add(x2, y2);
+            second = polygon[i + 1].cpy().add(x2, y2);
+            third = polygon[i + 2].cpy().add(x2, y2);
 
             if (checkLineCircleCollision(first.x, first.y, second.x, second.y, x + r / 2, y + r / 2, r)) {
                 return true;
@@ -83,80 +79,68 @@ public final class CollisionUtils {
      *
      * @param polygonX x coordinate of first polygon
      * @param polygonY y coordinate of first polygon
-     * @param pxScale  x scaling of first polygon
-     * @param pyScale  y scaling of first polygon
      * @param polygon  vertices of first polygon
      * @param otherX   x coordinate of second polygon
      * @param otherY   y coordinate of second polygon
-     * @param oxScale  x scaling of second polygon
-     * @param oyScale  y scaling of second polygon
      * @param other    vertices of second polygon
      * @return true when they collide otherwise false.
      */
-    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final float pxScale, final float pyScale, final Vector2[] polygon,
-                                                       final float otherX, final float otherY, final float oxScale, final float oyScale, final Vector2[] other) {
+    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final Vector2[] polygon,
+                                                       final float otherX, final float otherY, final Vector2[] other) {
 
         if (polygon.length < POLYGON_VERTEX_COUNT || other.length < POLYGON_VERTEX_COUNT) {
             //Invalid Polygon
             return false;
         }
 
+        return checkAllAxis(polygonX, polygonY, polygon, otherX, otherY, other)
+                || checkAllAxis(otherX, otherY, other, polygonX, polygonY, polygon);
+    }
+
+    /**
+     * Checks all necessary axis around the first polygon, whether they separate the two polygons or not.
+     *
+     * @param polygonX x coordinate of first polygon
+     * @param polygonY y coordinate of first polygon
+     * @param polygon  vertices of first polygon
+     * @param otherX   x coordinate of second polygon
+     * @param otherY   y coordinate of second polygon
+     * @param other    vertices of second polygon
+     *
+     * @return true if there is an axis that fits between the two polygons
+     */
+    private static boolean checkAllAxis(final float polygonX, final float polygonY, final Vector2[] polygon,
+                                        final float otherX, final float otherY, final Vector2[] other){
+
         for (int i = 0; i < polygon.length - 2; i += POLYGON_VERTEX_COUNT) {
 
-            final float polygonVertexX = polygonX + (polygon[i].x * pxScale);
-            final float polygonVertexY = polygonY + (polygon[i].y * pyScale);
+            final float polygonVertexX = polygonX + polygon[i].x;
+            final float polygonVertexY = polygonY + polygon[i].y;
 
-            final float polygonVertexXOne = polygonX + (polygon[i + 1].x * pxScale);
-            final float polygonVertexYOne = polygonY + (polygon[i + 1].y * pyScale);
+            final float polygonVertexXOne = polygonX + polygon[i + 1].x;
+            final float polygonVertexYOne = polygonY + polygon[i + 1].y;
 
-            final float polygonVertexXTwo = polygonX + (polygon[i + 2].x * pxScale);
-            final float polygonVertexYTwo = polygonY + (polygon[i + 2].y * pyScale);
+            final float polygonVertexXTwo = polygonX + polygon[i + 2].x;
+            final float polygonVertexYTwo = polygonY + polygon[i + 2].y;
 
-            gAxis.set(polygonVertexYOne - polygonVertexY, -1 * (polygonVertexXOne - polygonVertexX));
+            gAxis[0] = polygonVertexYOne - polygonVertexY;
+            gAxis[1] = -1 * (polygonVertexXOne - polygonVertexX);
 
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
+            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
                 return false;
             }
 
-            gAxis.set(polygonVertexYTwo - polygonVertexYOne, -1 * (polygonVertexXTwo - polygonVertexXOne));
+            gAxis[0] = polygonVertexYTwo - polygonVertexYOne;
+            gAxis[1] = -1 * (polygonVertexXTwo - polygonVertexXOne);
 
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
+            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
                 return false;
             }
 
-            gAxis.set(polygonVertexY - polygonVertexYTwo, -1 * (polygonVertexX - polygonVertexXTwo));
+            gAxis[0] = polygonVertexY - polygonVertexYTwo;
+            gAxis[1] = -1 * (polygonVertexX - polygonVertexXTwo);
 
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
-                return false;
-            }
-        }
-
-        for (int i = 0; i < other.length - 2; i += POLYGON_VERTEX_COUNT) {
-
-            final float polygonVertexX = otherX + (other[i].x * oxScale);
-            final float polygonVertexY = otherY + (other[i].y * oyScale);
-
-            final float polygonVertexXOne = otherX + (other[i + 1].x * oxScale);
-            final float polygonVertexYOne = otherY + (other[i + 1].y * oyScale);
-
-            final float polygonVertexXTwo = otherX + (other[i + 2].x * oxScale);
-            final float polygonVertexYTwo = otherY + (other[i + 2].y * oyScale);
-
-            gAxis.set(polygonVertexYOne - polygonVertexY, -1 * (polygonVertexXOne - polygonVertexX));
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
-                return false;
-            }
-
-            gAxis.set(polygonVertexYTwo - polygonVertexYOne, -(polygonVertexXTwo - polygonVertexXOne));
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
-                return false;
-            }
-
-            gAxis.set(polygonVertexY - polygonVertexYTwo, -1 * (polygonVertexX - polygonVertexXTwo));
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, pxScale, pyScale, polygon, otherX, otherY, oxScale, oyScale, other)) {
+            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
                 return false;
             }
         }
@@ -164,28 +148,24 @@ public final class CollisionUtils {
         return true;
     }
 
-
     /**
-     * Checks if a given axis seperates 2 polygons.
+     * Checks if a given axis separates 2 polygons.
      *
      * @param axis     An given axis
      * @param polygonX x coordinates of the first polygon
      * @param polygonY y coordinates of the first polygon
-     * @param pxScale  x scaling of the first polygon
-     * @param pyScale  y scaling of the first polygon
      * @param polygon  first polygon
      * @param otherX   x coordinates of the second polygon
      * @param otherY   y coordinates of the second polygon
-     * @param oxScale  x scaling of the second polygon
-     * @param oyScale  y scaling of the second polygon
      * @param other    second polygon
+     *
      * @return true when the axis fits between them without touching.
      */
-    private static boolean axisSeparatePolygons(final Vector2 axis, final float polygonX, final float polygonY, final float pxScale, final float pyScale, final Vector2[] polygon,
-                                                final float otherX, final float otherY, final float oxScale, final float oyScale, final Vector2[] other) {
+    private static boolean axisSeparatePolygons(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon,
+                                                final float otherX, final float otherY, final Vector2[] other) {
 
-        calculateInterval(axis, polygonX, polygonY, pxScale, pyScale, polygon, false);
-        calculateInterval(axis, otherX, otherY, oxScale, oyScale, other, true);
+        calculateInterval(axis, polygonX, polygonY, polygon, false);
+        calculateInterval(axis, otherX, otherY, other, true);
 
         if (minMaxA[0] > minMaxB[1] || minMaxB[0] > minMaxA[1]) {
             return true;
@@ -206,15 +186,15 @@ public final class CollisionUtils {
         return false;
     }
 
-    private static void calculateInterval(final Vector2 axis, final float polygonX, final float polygonY, final float xScale, final float yScale, final Vector2[] polygon, final boolean ab) {
+    private static void calculateInterval(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon, final boolean ab) {
 
-        float d = dot(polygonX, polygonY, polygon[0].x * xScale, polygon[0].y * yScale, axis.x, axis.y);
+        float d = dot(polygon[0].x + polygonX, polygon[0].y + polygonY, axis[0], axis[1]);
         if (!ab) {
             minMaxA[0] = d;
             minMaxA[1] = d;
 
             for (Vector2 vector : polygon) {
-                d = dot(polygonX, polygonY, vector.x * xScale, vector.y * yScale, axis.x, axis.y);
+                d = dot(vector.x + polygonX, vector.y + polygonY, axis[0], axis[1]);
                 if (d < minMaxA[0]) {
                     minMaxA[0] = d;
                 } else if (d > minMaxA[1]) {
@@ -226,7 +206,7 @@ public final class CollisionUtils {
             minMaxB[1] = d;
 
             for (Vector2 vector : polygon) {
-                d = dot(polygonX, polygonY, vector.x * xScale, vector.y * yScale, axis.x, axis.y);
+                d = dot(vector.x + polygonX,vector.y + polygonY, axis[0], axis[1]);
                 if (d < minMaxB[0]) {
                     minMaxB[0] = d;
                 } else if (d > minMaxB[1]) {
@@ -238,29 +218,28 @@ public final class CollisionUtils {
     }
 
     /**
-     * The dot product of 2 vectors
+     * The dot product of two vectors
      *
-     * @param xOffset x offset on first vector
-     * @param yOffset y offset on first vector
      * @param x1      x of the first vector
      * @param y1      y of the first vector
      * @param x2      x of the second vector
      * @param y2      y of the second vector
-     * @return the dot product of both vectors with an offset on the first vector.
+     *
+     * @return the dot product of two vectors
      */
-    private static float dot(final float xOffset, final float yOffset, final float x1, final float y1, final float x2, final float y2) {
-        return (xOffset + x1) * x2 + (yOffset + y1) * y2;
+    public static float dot(final float x1, final float y1, final float x2, final float y2) {
+        return x1 * x2 + y1 * y2;
     }
 
     /**
      * Checks if two circles collide
      * Coordinate origin is bottom left.
      *
-     * @param x1 x coordinate of the first shape
-     * @param y1 y coordinate of the first shape
+     * @param x1 x coordinate of the first circle
+     * @param y1 y coordinate of the first circle
      * @param r1 radius of the first circle
-     * @param x2 x coordinate of the second shape
-     * @param y2 y coordinate of the second shape
+     * @param x2 x coordinate of the second circle
+     * @param y2 y coordinate of the second circle
      * @param r2 radius of the second circle
      * @return <code>true</code> when they collide, else <code>false</code>.
      */
@@ -285,6 +264,7 @@ public final class CollisionUtils {
      * @param x2           x coordinate of the circle
      * @param y2           y coordinate of the circle
      * @param circleRadius radius of the circle
+     *
      * @return true when they collide else false.
      */
     public static boolean checkRectangleCircleCollision(final float x1, final float y1, final float rectWidth, final float rectHeight, final float x2, final float y2, final float circleRadius) {
@@ -318,6 +298,7 @@ public final class CollisionUtils {
      * @param x   x coordinate of the circle
      * @param y   y coordinate of the circle
      * @param r   radius of the circle
+     *
      * @return true when they collide else false.
      */
     public static boolean checkLineCircleCollision(final float p1X, final float p1Y, final float p2X, final float p2Y, final float x, final float y, final float r) {
@@ -403,6 +384,7 @@ public final class CollisionUtils {
      * @param vertices copy of local vertices of the polygon
      * @param xPoint   x coordinate of the point
      * @param yPoint   y coordinate of the point
+     *
      * @return true when point is inside of the polygon.
      */
     public static boolean contains(final float x, final float y, final float[] vertices, final float xPoint, final float yPoint) {
@@ -469,6 +451,7 @@ public final class CollisionUtils {
      * @param v2y1 y of second line start point
      * @param v2x2 x of second line end point
      * @param v2y2 y of second line end point
+     *
      * @return true, when the lines intersect
      */
     private static boolean lineIntersection(final float v1x1, final float v1y1, final float v1x2, final float v1y2, final float v2x1, final float v2y1, final float v2x2, final float v2y2) {
@@ -522,7 +505,7 @@ public final class CollisionUtils {
     }
 
     /**
-     * Checks if a moving rectangle faces towards another rectangle.
+     * Checks if a moving rectangle moves towards another rectangle.
      * Precision used to avoid edge cases, where two rectangles are to close to each other.
      *
      * @param bottomLeftX      bottom left x of the moving rectangle
@@ -537,7 +520,7 @@ public final class CollisionUtils {
      * @param otherTopRightY   top right y of the other rectangle
      * @return true when it's face is moving towards the other rectangle
      */
-    public static boolean facesTowards(final float bottomLeftX, final float bottomLeftY, final float topRightX, final float topRightY, final float vx, final float vy, final float otherBottomLeftX, final float otherBottomLeftY, final float otherTopRightX, final float otherTopRightY) {
+    public static boolean movesTowards(final float bottomLeftX, final float bottomLeftY, final float topRightX, final float topRightY, final float vx, final float vy, final float otherBottomLeftX, final float otherBottomLeftY, final float otherTopRightX, final float otherTopRightY) {
 
         final float precision = 0.000000005f;
 

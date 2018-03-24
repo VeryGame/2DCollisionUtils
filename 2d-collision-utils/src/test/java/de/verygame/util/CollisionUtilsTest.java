@@ -24,43 +24,54 @@ public class CollisionUtilsTest {
     @Test
     public void testCheckPolygonRectangleCollision() {
 
-        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 10, 10, 20, 6, 1, 1, secondPoly));
+        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 10, 10, 20, 6, secondPoly));
 
-        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 10, 10, 20, 6, 2, 1, secondPoly));
+        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 20, 10, 20, 6, scalePolygon(secondPoly, 2, 1)));
 
-        assertFalse(CollisionUtils.checkRectanglePolygonCollision(5, 0, 6, 8, 12, 5, 1, 1, secondPoly));
+        assertFalse(CollisionUtils.checkRectanglePolygonCollision(5, 0, 6, 8, 12, 5, secondPoly));
 
-        assertTrue(CollisionUtils.checkRectanglePolygonCollision(10, 10, 20, 20, 0, 0, 2, 2, firstPoly));
+        assertTrue(CollisionUtils.checkRectanglePolygonCollision(10, 10, 20, 20, 0, 0, scalePolygon(firstPoly, 2, 2)));
+    }
+
+    // Temporary until vector 2 is removed completely
+    private Vector2[] scalePolygon(final Vector2[] polygon, final float xScale, final float yScale){
+        Vector2[] copy = polygon.clone();
+
+        for (Vector2 v : copy){
+            v.scl(xScale, yScale);
+        }
+
+        return copy;
     }
 
     @Test
     public void testCheckPolygonCircleCollision(){
 
-        assertTrue(CollisionUtils.checkCirclePolygonCollision(0, 0, 3, 3, 3, 1, 1, secondPoly));
+        assertTrue(CollisionUtils.checkCirclePolygonCollision(0, 0, 3, 3, 3, secondPoly));
 
-        assertFalse(CollisionUtils.checkCirclePolygonCollision(15, 25, 6, 15, 15, 1, 1, firstPoly));
+        assertFalse(CollisionUtils.checkCirclePolygonCollision(15, 25, 6, 15, 15, firstPoly));
 
-        assertTrue(CollisionUtils.checkCirclePolygonCollision(15, 15, 5, 19, 13, 1, 1, firstPoly));
+        assertTrue(CollisionUtils.checkCirclePolygonCollision(15, 15, 5, 19, 13, firstPoly));
     }
 
     @Test
     public void testCheckPolygonPolygonCollision(){
 
-        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, firstPoly, 23, 10, 1, 1, firstPoly));
+        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 23, 10, firstPoly));
 
-        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, firstPoly, 22, 8, 1, 1, secondPoly));
+        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 22, 8, secondPoly));
 
-        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, secondPoly, 15, 10, 1, 1, secondPoly));
+        assertTrue(CollisionUtils.checkPolygonPolygonCollision(20, 10, secondPoly, 15, 10, secondPoly));
 
-        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, firstPoly, 26, 10, 1, 1, firstPoly));
+        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 26, 10, firstPoly));
 
-        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, firstPoly, 26, 8, 1, 1, secondPoly));
+        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 26, 8, secondPoly));
 
-        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, secondPoly, 14, 10, 1, 1, secondPoly));
+        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, secondPoly, 14, 10, secondPoly));
 
         Vector2[] incPoly = {new Vector2(42, 42), new Vector2(13, 37)};
 
-        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, 1, 1, firstPoly, 20, 10 , 1, 1, incPoly));
+        assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 20, 10, incPoly));
     }
 
     @Test
