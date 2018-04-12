@@ -18,8 +18,12 @@ public class CollisionUtilsTest {
     //triangle with height 5 and width 5
     Vector2[] firstPoly = {new Vector2(), new Vector2(0, 5), new Vector2(5, 5)};
 
+    float[][] firstPolyA =  {{0,0}, {5, 5}, {0, 5}};
+
     //square with height 5 and width 5
     Vector2[] secondPoly = {new Vector2(), new Vector2(5, 0), new Vector2(0, 5), new Vector2(5, 0), new Vector2(5, 5), new Vector2(0, 5)};
+
+    float[][] secondPolyA = {{0, 0}, {5, 0}, {5, 5}, {0, 5}};
 
     @Test
     public void testCheckPolygonRectangleCollision() {
@@ -47,11 +51,11 @@ public class CollisionUtilsTest {
     @Test
     public void testCheckPolygonCircleCollision(){
 
-        assertTrue(CollisionUtils.checkCirclePolygonCollision(0, 0, 3, 3, 3, secondPoly));
+        assertTrue(CollisionUtils.checkCirclePolygonCollision(0, 0, 3, 3, 3, secondPolyA));
 
-        assertFalse(CollisionUtils.checkCirclePolygonCollision(15, 25, 6, 15, 15, firstPoly));
+        assertFalse(CollisionUtils.checkCirclePolygonCollision(15, 25, 6, 15, 15, firstPolyA));
 
-        assertTrue(CollisionUtils.checkCirclePolygonCollision(15, 15, 5, 19, 13, firstPoly));
+        assertTrue(CollisionUtils.checkCirclePolygonCollision(15, 15, 5, 19, 13, firstPolyA));
     }
 
     @Test
