@@ -1,7 +1,5 @@
 package de.verygame.util;
 
-import com.badlogic.gdx.math.Vector2;
-
 /**
  * @author Marco Deneke
  * <p/>
@@ -13,7 +11,6 @@ public final class CollisionUtils {
     private static final int vY = 1;
 
     private static final int POLYGON_VERTEX_COUNT = 3;
-    static final int RECTANGLE_VERTEX_COUNT = 6;
 
     private static float[] gAxis = new float[2];
     private static float[] minMaxA = {0, 0};
@@ -35,7 +32,7 @@ public final class CollisionUtils {
      * @param otherPoly points of polygon
      * @return true when colliding else false
      */
-    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final Vector2[] otherPoly) {
+    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final float[][] otherPoly) {
         return checkPolygonPolygonCollision(x, y, PolygonUtils.constructRectanglePolygon(width, height), x2, y2, otherPoly);
     }
 
@@ -85,8 +82,8 @@ public final class CollisionUtils {
      * @param other    vertices of second polygon
      * @return true when they collide otherwise false.
      */
-    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final Vector2[] polygon,
-                                                       final float otherX, final float otherY, final Vector2[] other) {
+    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final float[][] polygon,
+                                                       final float otherX, final float otherY, final float[][] other) {
 
         if (polygon.length < POLYGON_VERTEX_COUNT || other.length < POLYGON_VERTEX_COUNT) {
             //Invalid Polygon
@@ -109,36 +106,19 @@ public final class CollisionUtils {
      *
      * @return true if there is an axis that fits between the two polygons
      */
-    private static boolean checkAllAxis(final float polygonX, final float polygonY, final Vector2[] polygon,
-                                        final float otherX, final float otherY, final Vector2[] other){
+    private static boolean checkAllAxis(final float polygonX, final float polygonY, final float[][] polygon,
+                                        final float otherX, final float otherY, final float[][] other){
 
-        for (int i = 0; i < polygon.length - 2; i += POLYGON_VERTEX_COUNT) {
+        for (int i = 0; i < polygon.length - 1; i ++) {
 
-            final float polygonVertexX = polygonX + polygon[i].x;
-            final float polygonVertexY = polygonY + polygon[i].y;
+            final float polygonVertexX = polygonX + polygon[i][vX];
+            final float polygonVertexY = polygonY + polygon[i][vY];
 
-            final float polygonVertexXOne = polygonX + polygon[i + 1].x;
-            final float polygonVertexYOne = polygonY + polygon[i + 1].y;
-
-            final float polygonVertexXTwo = polygonX + polygon[i + 2].x;
-            final float polygonVertexYTwo = polygonY + polygon[i + 2].y;
+            final float polygonVertexXOne = polygonX + polygon[(i + 1 == polygon.length) ? 0 : i+1][vX];
+            final float polygonVertexYOne = polygonY + polygon[(i + 1 == polygon.length) ? 0 : i+1][vY];
 
             gAxis[0] = polygonVertexYOne - polygonVertexY;
             gAxis[1] = -1 * (polygonVertexXOne - polygonVertexX);
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
-                return false;
-            }
-
-            gAxis[0] = polygonVertexYTwo - polygonVertexYOne;
-            gAxis[1] = -1 * (polygonVertexXTwo - polygonVertexXOne);
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
-                return false;
-            }
-
-            gAxis[0] = polygonVertexY - polygonVertexYTwo;
-            gAxis[1] = -1 * (polygonVertexX - polygonVertexXTwo);
 
             if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
                 return false;
@@ -161,8 +141,8 @@ public final class CollisionUtils {
      *
      * @return true when the axis fits between them without touching.
      */
-    private static boolean axisSeparatePolygons(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon,
-                                                final float otherX, final float otherY, final Vector2[] other) {
+    private static boolean axisSeparatePolygons(final float[] axis, final float polygonX, final float polygonY, final float[][] polygon,
+                                                final float otherX, final float otherY, final float[][] other) {
 
         calculateInterval(axis, polygonX, polygonY, polygon, false);
         calculateInterval(axis, otherX, otherY, other, true);
@@ -186,15 +166,15 @@ public final class CollisionUtils {
         return false;
     }
 
-    private static void calculateInterval(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon, final boolean ab) {
+    private static void calculateInterval(final float[] axis, final float polygonX, final float polygonY, final float[][] polygon, final boolean ab) {
 
-        float d = dot(polygon[0].x + polygonX, polygon[0].y + polygonY, axis[0], axis[1]);
+        float d = dot(polygon[0][vX] + polygonX, polygon[0][vY] + polygonY, axis[0], axis[1]);
         if (!ab) {
             minMaxA[0] = d;
             minMaxA[1] = d;
 
-            for (Vector2 vector : polygon) {
-                d = dot(vector.x + polygonX, vector.y + polygonY, axis[0], axis[1]);
+            for (float[] vector : polygon) {
+                d = dot(vector[vX] + polygonX, vector[vY] + polygonY, axis[0], axis[1]);
                 if (d < minMaxA[0]) {
                     minMaxA[0] = d;
                 } else if (d > minMaxA[1]) {
@@ -205,8 +185,8 @@ public final class CollisionUtils {
             minMaxB[0] = d;
             minMaxB[1] = d;
 
-            for (Vector2 vector : polygon) {
-                d = dot(vector.x + polygonX,vector.y + polygonY, axis[0], axis[1]);
+            for (float[] vector : polygon) {
+                d = dot(vector[vX] + polygonX,vector[vY] + polygonY, axis[0], axis[1]);
                 if (d < minMaxB[0]) {
                     minMaxB[0] = d;
                 } else if (d > minMaxB[1]) {
