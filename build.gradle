@@ -30,8 +30,6 @@ project(':2d-collision-utils') {
     }
 
     dependencies {
-        compile "com.badlogicgames.gdx:gdx-tools:1.9.4"
-        compile 'org.jbox2d:jbox2d-library:2.2.1.1'
         compile 'org.reflections:reflections:0.9.10'
     }
 }

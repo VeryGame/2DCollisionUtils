@@ -1,7 +1,5 @@
 package de.verygame.util;
 
-import com.badlogic.gdx.math.Vector2;
-
 /**
  * @author Marco Deneke
  * <p/>
@@ -9,8 +7,10 @@ import com.badlogic.gdx.math.Vector2;
  */
 public final class CollisionUtils {
 
+    private static final int vX = 0;
+    private static final int vY = 1;
+
     private static final int POLYGON_VERTEX_COUNT = 3;
-    static final int RECTANGLE_VERTEX_COUNT = 6;
 
     private static float[] gAxis = new float[2];
     private static float[] minMaxA = {0, 0};
@@ -32,12 +32,12 @@ public final class CollisionUtils {
      * @param otherPoly points of polygon
      * @return true when colliding else false
      */
-    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final Vector2[] otherPoly) {
+    public static boolean checkRectanglePolygonCollision(final float x, final float y, final float width, final float height, final float x2, final float y2, final float[][] otherPoly) {
         return checkPolygonPolygonCollision(x, y, PolygonUtils.constructRectanglePolygon(width, height), x2, y2, otherPoly);
     }
 
     /**
-     * Checks if a Polygon collides with a Circle
+     * Checks if a Polygon, which is not triangulated, collides with a Circle
      *
      * @param x       x coordinate of the circle
      * @param y       y coordinate of the circle
@@ -47,31 +47,28 @@ public final class CollisionUtils {
      * @param polygon vertices of the Polygon
      * @return true when they collide otherwise false
      */
-    public static boolean checkCirclePolygonCollision(float x, float y, float r, float x2, float y2, final Vector2[] polygon) {
+    public static boolean checkCirclePolygonCollision(float x, float y, float r, float x2, float y2, final float[][] polygon) {
 
-        Vector2 first;
-        Vector2 second;
-        Vector2 third;
+        float[] first;
+        float[] second;
 
-        for (int i = 0; i < polygon.length - 2; i += POLYGON_VERTEX_COUNT) {
+        for (int i = 0; i < polygon.length; i++) {
 
-            first = polygon[i].cpy().add(x2, y2);
-            second = polygon[i + 1].cpy().add(x2, y2);
-            third = polygon[i + 2].cpy().add(x2, y2);
+            first = polygon[i].clone();
+            first[vX] += x2;
+            first[vY] += y2;
 
-            if (checkLineCircleCollision(first.x, first.y, second.x, second.y, x + r / 2, y + r / 2, r)) {
-                return true;
-            }
-            if (checkLineCircleCollision(second.x, second.y, third.x, third.y, x + r / 2, y + r / 2, r)) {
-                return true;
-            }
-            if (checkLineCircleCollision(first.x, first.y, third.x, third.y, x + r / 2, y + r / 2, r)) {
+            second = polygon[(i + 1 == polygon.length)? 0 : i + 1].clone();
+            second[vX] += x2;
+            second[vY] += y2;
+
+            if (checkLineCircleCollision(first[vX], first[vY], second[vX], second[vY], x + r, y + r, r)) {
                 return true;
             }
         }
 
         //check if one point on the circle is inside of the polygon
-        return contains(x2, y2, ArrayUtils.buildVertexArray(polygon), x + r, y);
+        return contains(x2, y2, polygon, x + r, y);
     }
 
     /**
@@ -85,8 +82,8 @@ public final class CollisionUtils {
      * @param other    vertices of second polygon
      * @return true when they collide otherwise false.
      */
-    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final Vector2[] polygon,
-                                                       final float otherX, final float otherY, final Vector2[] other) {
+    public static boolean checkPolygonPolygonCollision(final float polygonX, final float polygonY, final float[][] polygon,
+                                                       final float otherX, final float otherY, final float[][] other) {
 
         if (polygon.length < POLYGON_VERTEX_COUNT || other.length < POLYGON_VERTEX_COUNT) {
             //Invalid Polygon
@@ -109,36 +106,19 @@ public final class CollisionUtils {
      *
      * @return true if there is an axis that fits between the two polygons
      */
-    private static boolean checkAllAxis(final float polygonX, final float polygonY, final Vector2[] polygon,
-                                        final float otherX, final float otherY, final Vector2[] other){
+    private static boolean checkAllAxis(final float polygonX, final float polygonY, final float[][] polygon,
+                                        final float otherX, final float otherY, final float[][] other){
 
-        for (int i = 0; i < polygon.length - 2; i += POLYGON_VERTEX_COUNT) {
+        for (int i = 0; i < polygon.length - 1; i ++) {
 
-            final float polygonVertexX = polygonX + polygon[i].x;
-            final float polygonVertexY = polygonY + polygon[i].y;
+            final float polygonVertexX = polygonX + polygon[i][vX];
+            final float polygonVertexY = polygonY + polygon[i][vY];
 
-            final float polygonVertexXOne = polygonX + polygon[i + 1].x;
-            final float polygonVertexYOne = polygonY + polygon[i + 1].y;
-
-            final float polygonVertexXTwo = polygonX + polygon[i + 2].x;
-            final float polygonVertexYTwo = polygonY + polygon[i + 2].y;
+            final float polygonVertexXOne = polygonX + polygon[(i + 1 == polygon.length) ? 0 : i+1][vX];
+            final float polygonVertexYOne = polygonY + polygon[(i + 1 == polygon.length) ? 0 : i+1][vY];
 
             gAxis[0] = polygonVertexYOne - polygonVertexY;
             gAxis[1] = -1 * (polygonVertexXOne - polygonVertexX);
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
-                return false;
-            }
-
-            gAxis[0] = polygonVertexYTwo - polygonVertexYOne;
-            gAxis[1] = -1 * (polygonVertexXTwo - polygonVertexXOne);
-
-            if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
-                return false;
-            }
-
-            gAxis[0] = polygonVertexY - polygonVertexYTwo;
-            gAxis[1] = -1 * (polygonVertexX - polygonVertexXTwo);
 
             if (axisSeparatePolygons(gAxis, polygonX, polygonY, polygon, otherX, otherY, other)) {
                 return false;
@@ -161,8 +141,8 @@ public final class CollisionUtils {
      *
      * @return true when the axis fits between them without touching.
      */
-    private static boolean axisSeparatePolygons(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon,
-                                                final float otherX, final float otherY, final Vector2[] other) {
+    private static boolean axisSeparatePolygons(final float[] axis, final float polygonX, final float polygonY, final float[][] polygon,
+                                                final float otherX, final float otherY, final float[][] other) {
 
         calculateInterval(axis, polygonX, polygonY, polygon, false);
         calculateInterval(axis, otherX, otherY, other, true);
@@ -186,15 +166,15 @@ public final class CollisionUtils {
         return false;
     }
 
-    private static void calculateInterval(final float[] axis, final float polygonX, final float polygonY, final Vector2[] polygon, final boolean ab) {
+    private static void calculateInterval(final float[] axis, final float polygonX, final float polygonY, final float[][] polygon, final boolean ab) {
 
-        float d = dot(polygon[0].x + polygonX, polygon[0].y + polygonY, axis[0], axis[1]);
+        float d = dot(polygon[0][vX] + polygonX, polygon[0][vY] + polygonY, axis[0], axis[1]);
         if (!ab) {
             minMaxA[0] = d;
             minMaxA[1] = d;
 
-            for (Vector2 vector : polygon) {
-                d = dot(vector.x + polygonX, vector.y + polygonY, axis[0], axis[1]);
+            for (float[] vector : polygon) {
+                d = dot(vector[vX] + polygonX, vector[vY] + polygonY, axis[0], axis[1]);
                 if (d < minMaxA[0]) {
                     minMaxA[0] = d;
                 } else if (d > minMaxA[1]) {
@@ -205,8 +185,8 @@ public final class CollisionUtils {
             minMaxB[0] = d;
             minMaxB[1] = d;
 
-            for (Vector2 vector : polygon) {
-                d = dot(vector.x + polygonX,vector.y + polygonY, axis[0], axis[1]);
+            for (float[] vector : polygon) {
+                d = dot(vector[vX] + polygonX,vector[vY] + polygonY, axis[0], axis[1]);
                 if (d < minMaxB[0]) {
                     minMaxB[0] = d;
                 } else if (d > minMaxB[1]) {
@@ -377,7 +357,7 @@ public final class CollisionUtils {
     }
 
     /**
-     * Checks if a polygon contains a point with a ray cast
+     * Checks if a polygon, which is not triangulated, contains a point with a ray cast.
      *
      * @param x        x coordinate of the polygon
      * @param y        y coordinate of the polygon
@@ -387,7 +367,7 @@ public final class CollisionUtils {
      *
      * @return true when point is inside of the polygon.
      */
-    public static boolean contains(final float x, final float y, final float[] vertices, final float xPoint, final float yPoint) {
+    public static boolean contains(final float x, final float y, final float[][] vertices, final float xPoint, final float yPoint) {
 
         float xMax = Float.NEGATIVE_INFINITY;
         float xMin = Float.POSITIVE_INFINITY;
@@ -396,11 +376,11 @@ public final class CollisionUtils {
 
         while (i < vertices.length) {
 
-            if (vertices[i] > xMax) {
-                xMax = vertices[i];
+            if (vertices[i][vX] > xMax) {
+                xMax = vertices[i][vX];
             }
-            if (vertices[i] < xMin) {
-                xMin = vertices[i];
+            if (vertices[i][vX] < xMin) {
+                xMin = vertices[i][vX];
             }
 
             i++;
@@ -409,31 +389,26 @@ public final class CollisionUtils {
         float accuracy = (xMax - xMin) / 100;
 
         int intersectionCount;
-
         boolean contains = false;
-
         i = 0;
 
         while (i < vertices.length && !contains) {
 
             intersectionCount = 0;
 
-            for (int j = 0; j < POLYGON_VERTEX_COUNT; j++) {
-                float v2x1 = vertices[i + j] + x;
-                float v2y1 = vertices[i + j + 1] + y;
+            float v2x1 = vertices[i][vX] + x;
+            float v2y1 = vertices[i][vY] + y;
 
-                float v2x2 = vertices[i + ((j + 1) & POLYGON_VERTEX_COUNT)] + x;
-                float v2y2 = vertices[i + ((j + 1) & POLYGON_VERTEX_COUNT) + 1] + y;
+            float v2x2 = vertices[(i + 1 == vertices.length) ? 0 : i+1][vX] + x;
+            float v2y2 = vertices[(i + 1 == vertices.length) ? 0 : i+1][vY] + y;
 
-                if (lineIntersection(xPoint, yPoint, xMax + accuracy, yPoint, v2x1, v2y1, v2x2, v2y2)) {
-                    intersectionCount++;
-                }
-
+            if (lineIntersection(xPoint, yPoint, xMax + accuracy, yPoint, v2x1, v2y1, v2x2, v2y2)) {
+                intersectionCount++;
             }
 
             contains = intersectionCount % 2 != 0;
 
-            i += 2 * POLYGON_VERTEX_COUNT;
+            i++;
         }
 
         return contains;

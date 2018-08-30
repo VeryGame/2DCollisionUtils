@@ -1,11 +1,6 @@
 package de.verygame.util;
 
-import com.badlogic.gdx.math.Vector2;
-
-import de.verygame.util.CollisionUtils;
 import org.junit.Test;
-
-import de.verygame.util.PolygonUtils;
 
 import static org.junit.Assert.*;
 
@@ -15,33 +10,20 @@ import static org.junit.Assert.*;
  */
 public class CollisionUtilsTest {
 
-    //triangle with height 5 and width 5
-    Vector2[] firstPoly = {new Vector2(), new Vector2(0, 5), new Vector2(5, 5)};
+    private float[][] firstPoly =  {{0,0}, {5, 5}, {0, 5}};
 
-    //square with height 5 and width 5
-    Vector2[] secondPoly = {new Vector2(), new Vector2(5, 0), new Vector2(0, 5), new Vector2(5, 0), new Vector2(5, 5), new Vector2(0, 5)};
+    private float[][] secondPoly = {{0, 0}, {5, 0}, {5, 5}, {0, 5}};
 
     @Test
     public void testCheckPolygonRectangleCollision() {
 
         assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 10, 10, 20, 6, secondPoly));
 
-        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 20, 10, 20, 6, scalePolygon(secondPoly, 2, 1)));
+        assertTrue(CollisionUtils.checkRectanglePolygonCollision(15, 10, 20, 10, 20, 6, PolygonUtils.scaledCopy(secondPoly, 2, 1)));
 
         assertFalse(CollisionUtils.checkRectanglePolygonCollision(5, 0, 6, 8, 12, 5, secondPoly));
 
-        assertTrue(CollisionUtils.checkRectanglePolygonCollision(10, 10, 20, 20, 0, 0, scalePolygon(firstPoly, 2, 2)));
-    }
-
-    // Temporary until vector 2 is removed completely
-    private Vector2[] scalePolygon(final Vector2[] polygon, final float xScale, final float yScale){
-        Vector2[] copy = polygon.clone();
-
-        for (Vector2 v : copy){
-            v.scl(xScale, yScale);
-        }
-
-        return copy;
+        assertTrue(CollisionUtils.checkRectanglePolygonCollision(10, 10, 20, 20, 0, 0, PolygonUtils.scaledCopy(firstPoly, 2, 2)));
     }
 
     @Test
@@ -69,7 +51,7 @@ public class CollisionUtilsTest {
 
         assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, secondPoly, 14, 10, secondPoly));
 
-        Vector2[] incPoly = {new Vector2(42, 42), new Vector2(13, 37)};
+        float[][] incPoly = new float[][]{new float[]{42, 42}, new float[]{13,37}};
 
         assertFalse(CollisionUtils.checkPolygonPolygonCollision(20, 10, firstPoly, 20, 10, incPoly));
     }

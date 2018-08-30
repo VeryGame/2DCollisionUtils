@@ -1,9 +1,5 @@
 package de.verygame.util;
 
-import com.badlogic.gdx.math.Vector2;
-
-import static de.verygame.util.CollisionUtils.RECTANGLE_VERTEX_COUNT;
-
 /**
  * Created by Marco on 04.05.2017.
  *
@@ -12,18 +8,17 @@ import static de.verygame.util.CollisionUtils.RECTANGLE_VERTEX_COUNT;
 
 public final class PolygonUtils {
 
-    private static Vector2[] rectanglePoly = new Vector2[RECTANGLE_VERTEX_COUNT];
-    private static Vector2 temp = new Vector2();
-
+    private static final int RECTANGLE_VERTEX_COUNT = 4;
+    private static float[][] rectanglePoly = new float[RECTANGLE_VERTEX_COUNT][2];
 
     private PolygonUtils() {
         //Default Constructor
     }
 
     /**
-     * Tries to approximate the center of a polygon
+     * Tries to approximate the center of a polygon. Accurate for convex polygons.
      *
-     * @param vertices the given polygon
+     * @param vertices the given polygon as vertex array
      * @return index 0 for x and index 1 for y coordinate
      */
     public static float[] calculateCenter(float[] vertices) {
@@ -45,13 +40,40 @@ public final class PolygonUtils {
         return center;
     }
 
-    public static short[] getDefaultTriangles(float[] polygon) {
-        short[] triangles = new short[polygon.length / 2];
-        for (short i = 0; i < triangles.length; i++) {
-            triangles[i] = i;
+    /**
+     * Tries to approximate the center of a polygon. Accurate for convex polygons.
+     *
+     * @param polygon the given polygon
+     * @return index 0 for x and index 1 for y coordinate
+     */
+    public static float[] calculateCenter(float[][] polygon) {
+
+        float[] center = new float[2];
+
+        center[0] = 0;
+        center[1] = 0;
+
+        for (int i = 0; i < polygon.length; i ++) {
+            center[0] += polygon[i][0];
+            center[1] += polygon[i][1];
         }
 
-        return triangles;
+        center[0] /= (polygon.length);
+        center[1] /= (polygon.length);
+
+
+        return center;
+    }
+
+    public static float[][] scaledCopy(float[][] polygon, float xScl, float yScl){
+        float[][] cloneP = polygon.clone();
+
+        for (float[] vector : cloneP){
+            vector[0] *= xScl;
+            vector[1] *= yScl;
+        }
+
+        return cloneP;
     }
 
     /**
@@ -96,43 +118,54 @@ public final class PolygonUtils {
 
 
     /**
-     * Constructs a rectangle polygon with two triangles.
+     * Constructs a rectangle polygon.
      *
      * @param width  width of the rectangle
      * @param height height of the rectangle
      * @return new array containing the polygon
      */
-    public static Vector2[] constructRectanglePolygon(float width, float height) {
+    public static float[][] constructRectanglePolygon(float width, float height) {
         int currentIndex = 0;
-        // first triangle: left lower corner
-        temp.set(0, 0);
-        rectanglePoly[currentIndex] = temp.cpy();
+        // left lower corner
+        rectanglePoly[currentIndex][0] = 0; //x
+        rectanglePoly[currentIndex][1] = 0; //y
         currentIndex++;
 
-        // first triangle: right upper corner
-        temp.set(width, height);
-        rectanglePoly[currentIndex] = temp.cpy();
+        // right lower corner
+        rectanglePoly[currentIndex][0] = width;
+        rectanglePoly[currentIndex][1] = 0;
         currentIndex++;
 
-        // first triangle: left upper corner
-        temp.set(0, height);
-        rectanglePoly[currentIndex] = temp.cpy();
+        // right upper corner
+        rectanglePoly[currentIndex][0] = width;
+        rectanglePoly[currentIndex][1] = height;
         currentIndex++;
 
-        // second triangle: left lower corner
-        temp.set(0, 0);
-        rectanglePoly[currentIndex] = temp.cpy();
-        currentIndex++;
-
-        // second triangle: right lower corner
-        temp.set(width, 0);
-        rectanglePoly[currentIndex] = temp.cpy();
-        currentIndex++;
-
-        // second triangle: right upper corner
-        temp.set(width, height);
-        rectanglePoly[currentIndex] = temp.cpy();
+        // left upper corner
+        rectanglePoly[currentIndex][0] = 0;
+        rectanglePoly[currentIndex][1] = height;
 
         return rectanglePoly.clone();
+    }
+
+    public static String toString(float[][] polygon) {
+
+        String res = "";
+
+        StringBuilder resBuilder = new StringBuilder(res);
+        resBuilder.append("[");
+
+        for (int i = 0; i < polygon.length; i++) {
+
+            resBuilder.append("[").append(polygon[i][0]).append(", ").append(polygon[i][1]).append("]");
+
+            if (i < polygon.length - 1) {
+                resBuilder.append(", ");
+            }
+        }
+
+        resBuilder.append("]");
+
+        return resBuilder.toString();
     }
 }
