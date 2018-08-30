@@ -1,24 +1,24 @@
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-group = 'de.verygame.util'
+group = 'com.github.mrcdnk'
 version = '0.1'
 archivesBaseName = '2d-collision-utils'
 
 ext {
     appName = "2d-collision-utils"
-    appDescription = ""
-    projectUrl = "https://github.com/mrcdnk/2DCollisionUtils"
-    scmUrl = "https://github.com/mrcdnk/2DCollisionUtils.git"
-    connectionUrl = "scm:git:git://github.com/mrcdnk/2DCollisionUtils.git"
-    developerConnectionUrl = "scm:git:ssh:git@github.com:mrcdnk/2DCollisionUtils.git"
+    appDescription = "Lightweight 2D collision utils"
+    projectUrl = "https://github.com/mrcdnk/2d-collision-utils"
+    scmUrl = "https://github.com/mrcdnk/2d-collision-utils.git"
+    connectionUrl = "scm:git:git://github.com/mrcdnk/2d-collision-utils.git"
+    developerConnectionUrl = "scm:git:ssh:git@github.com:mrcdnk/2d-collision-utils.git"
     mitLicenseName = "The MIT License (MIT)"
     mitLicenseUrl = "https://opensource.org/licenses/mit-license.php"
     mitLicenseDis = "repo"
 
     devId = "mrcdnk"
     devName = "Marco Deneke"
-    devEmail = ""
+    devEmail = "mrcdnk@t-online.de"
 }
 
 /*
