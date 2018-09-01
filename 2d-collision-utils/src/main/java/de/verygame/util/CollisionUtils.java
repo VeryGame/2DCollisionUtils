@@ -2,7 +2,7 @@ package de.verygame.util;
 
 /**
  * @author Marco Deneke
- * <p/>
+ *
  * Created by Marco Deneke on 24.06.2015.
  */
 public final class CollisionUtils {
